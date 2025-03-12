@@ -1,30 +1,99 @@
+;; Water Usage Contract
+;; Tracks water consumption
 
-;; title: water-usage
-;; version:
-;; summary:
-;; description:
+(define-map usage
+  { source-id: uint, user: principal, period: uint }
+  {
+    amount: uint,
+    verified: bool
+  }
+)
 
-;; traits
-;;
+(define-map admins
+  { address: principal }
+  { active: bool }
+)
 
-;; token definitions
-;;
+;; Initialize contract with first admin
+(define-public (initialize)
+  (begin
+    (map-set admins { address: tx-sender } { active: true })
+    (ok true)
+  )
+)
 
-;; constants
-;;
+;; Report water usage
+(define-public (report
+                (source-id uint)
+                (period uint)
+                (amount uint))
+  (begin
+    ;; Store usage
+    (map-set usage
+      { source-id: source-id, user: tx-sender, period: period }
+      {
+        amount: amount,
+        verified: false
+      }
+    )
 
-;; data vars
-;;
+    (ok true)
+  )
+)
 
-;; data maps
-;;
+;; Verify usage
+(define-public (verify
+                (source-id uint)
+                (user principal)
+                (period uint)
+                (verified-amount uint))
+  (begin
+    ;; Only admins can verify
+    (asserts! (is-admin tx-sender) (err u1))
 
-;; public functions
-;;
+    ;; Usage must be reported
+    (asserts! (usage-exists source-id user period) (err u2))
 
-;; read only functions
-;;
+    ;; Update usage
+    (map-set usage
+      { source-id: source-id, user: user, period: period }
+      {
+        amount: verified-amount,
+        verified: true
+      }
+    )
 
-;; private functions
-;;
+    (ok true)
+  )
+)
+
+;; Add an admin
+(define-public (add-admin (address principal))
+  (begin
+    ;; Only admins can add admins
+    (asserts! (is-admin tx-sender) (err u1))
+
+    (map-set admins
+      { address: address }
+      { active: true }
+    )
+
+    (ok true)
+  )
+)
+
+;; Get usage
+(define-read-only (get-usage (source-id uint) (user principal) (period uint))
+  (map-get? usage { source-id: source-id, user: user, period: period })
+)
+
+;; Check if usage exists
+(define-read-only (usage-exists (source-id uint) (user principal) (period uint))
+  (is-some (map-get? usage { source-id: source-id, user: user, period: period }))
+)
+
+;; Check if address is admin
+(define-read-only (is-admin (address principal))
+  (default-to false (get active (map-get? admins { address: address })))
+)
 

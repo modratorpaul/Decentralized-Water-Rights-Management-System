@@ -13,3 +13,7 @@ J
 tests/water-rights.test.ts,9/a/9afe5112c9181f2b4f523aa86272f3b0d45450cd
 K
 tests/water-trading.test.ts,c/0/c07183e2883a3eaa791689098599eff50ad7f360
+J
+contracts/water-usage.clar,7/7/77522e83ad579440c10fd4092f0cdc8c8531f188
+I
+tests/water-usage.test.ts,8/7/87949d94f11a79ac2121546603e940b5eb38cefd
